@@ -1,8 +1,7 @@
-# QIIME 2 Cancer Microbiome Intervention Tutorial
+# QIIME 2 Atacama soil microbiome Tutorial
 
-This repository contains the source for the QIIME 2 Cancer Microbiome
-Intervention Tutorial. This content is presented as a [Jupyter Book](https://jupyterbook.org)
-[here](https://docs.qiime2.org/jupyterbooks/cancer-microbiome-intervention-tutorial/).
+This repository contains the source for the QIIME 2 “Atacama soil microbiome” Tutorial. This content is presented as a [Jupyter Book](https://jupyterbook.org)
+[here](https://docs.qiime2.org/2022.2/tutorials/atacama-soils/).
 
 You shouldn't need to access this source repository if you're interested in
 following the tutorial or reading other parts of the Jupyter Book.
@@ -34,7 +33,7 @@ Jupyter Books that can illustrate QIIME 2 workflows as steps in different QIIME
 1. Obtain Jupyter Book content by cloning this repository and changing into the
    new directory that is created:
    ```{code-block}
-   git clone git@github.com:qiime2/cancer-microbiome-intervention-tutorial.git
+   git clone git@github.com:Vlasovets/atacama-soil-microbiome-tutorial.git
    cd cancer-microbiome-intervention-tutorial
    ```
 
