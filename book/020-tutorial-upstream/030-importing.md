@@ -146,13 +146,18 @@ If we look at the last 20 or so rows in the table, though, we will observe
 that many samples have fewer than 100 reads in them - let’s filter those samples out of the data:
 
 ```{usage}
-
-def export_factory(metadata_dir):
+  
+def export_factory():
     import qiime2
 
-    a = qiime2.Metadata.load('per_sample_fastq_counts', metadata_dir)
-
-    return a
+    a = qiime2.Visualization.load('demultiplexed_sequences_subsample_view')
+    
+    dirfmt = a.view(a.format)
+    vzDir = str(dirfmt)
+    metadata_dir = vzDir + 'per-sample-fastq-counts.tsv'
+    
+    
+    return qiime2.Visualization.export_data(a, metadata_dir)
 
 
 def filter_factory():
@@ -162,20 +167,15 @@ def filter_factory():
     
     return b
 
-vis = qiime2.Visualization.load('demultiplexed_sequences_subsample_view')
-dirfmt = vis.view(vis.format)
-vzDir = str(dirfmt)
-metadata_dir = vzDir + 'per-sample-fastq-counts.tsv'
-
-metadata = use.init_metadata("metadata", export_factory(metadata_dir))
+metadata = use.init_metadata('Type[Metadata]', export_factory)
 
 demultiplexed_sequences_top100 = use.init_artifact('demultiplexed_sequences_top100', filter_factory)
 
 use.action(
-    use.UsageAction(plugin_id='demux', action_id='filter-samples'),
-    use.UsageInputs(data=demultiplexed_sequences_subsample_100,
+    use.UsageAction(plugin_id='demux', action_id='filter_samples'),
+    use.UsageInputs(demux=demultiplexed_sequences_top100,
                     metadata=metadata,
                     where = 'CAST([forward sequence count] AS INT) > 100'),
-    use.UsageOutputNames(filtered_demux='demultiplexed_sequences_top100'),
+    use.UsageOutputNames(filtered_demux='demultiplexed_sequences_filtered'),
 )
 ```
