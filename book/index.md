@@ -1,10 +1,5 @@
-# QIIME 2 Cancer Microbiome Intervention Tutorial
+# QIIME 2 “Atacama soil microbiome” tutorial
 
-This tutorial was originally developed for the 2022 NIH Foundation for
-Advanced Education in the Sciences Microbiome Bioinformatics with QIIME 2
-workshop, taught online January 31 - February 4, 2022. It is now being
-publicly released with [corresponding video content](https://youtube.com/playlist?list=PLbVDKwGpb3XmvnTrU40zHRT7NZWWVNUpt)
-on the [QIIME 2 YouTube channel](https://youtube.com/qiime2).
 
 This tutorial is intended to be read like a book, from beginning to end.
 
@@ -13,13 +8,13 @@ and our education and documentation ecosystem, including:
 
 * The new QIIME 2 [Galaxy](https://usegalaxy.org/)-based graphical user
   interface;
-* New tutorial data;
+* New q2-gglasso plugin;
 * Our new QIIME 2 documentation system, which illustrates how to use QIIME 2
   with different user interfaces, including Galaxy, the QIIME 2 command line
   interface, and the QIIME 2 Python 3 API. You can choose to use whichever of
   these interfaces you're most comfortable with, or user different interfaces
   for different steps;
-* Our first [Jupyter Book](https://jupyterbook.org/intro.html)-based QIIME 2
+*  [Jupyter Book](https://jupyterbook.org/intro.html)-based QIIME 2
   tutorial.
 
 ```{admonition} Important!
@@ -30,9 +25,6 @@ we hope you will too and you become involved in the QIIME 2 community.
 ```
 
 ## Relevant links and protocols
-
-* [Workshop video playlist](https://youtube.com/playlist?list=PLbVDKwGpb3XmvnTrU40zHRT7NZWWVNUpt)
-* [Workshop slides](https://bit.ly/3GZaMjt)
 * [Project homepage](https://qiime2.org)
 * [Support and Discussion Forum](https://forum.qiime2.org) (go here for help)
 * [YouTube channel](https://youtube.com/qiime2)
