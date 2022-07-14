@@ -22,8 +22,6 @@ First, download the metadata.
 
 ```{usage}
 def read_metadata():
-    ## This function is identical to the filter.md metadata_factory function - should
-    ## be able to call that once issue#1 is addressed.
     import tempfile
     import requests
     import pandas as pd
