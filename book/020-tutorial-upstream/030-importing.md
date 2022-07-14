@@ -1,4 +1,4 @@
-# Importing demultiplexed sequence data
+# Importing, demultiplexing and filtering sequence data
 
 ```{usage-scope}
 ---
@@ -87,12 +87,95 @@ control on the data in the next step of the tutorial.
 
 ```{usage}
 
+barcode_sequence = use.get_metadata_column('barcode_sequence', 'barcode-sequence', sample_metadata)
+
 use.action(
     use.UsageAction(plugin_id='demux', action_id='emp_paired'),
     use.UsageInputs(seqs=emp_paired_end_sequences, 
-                    barcodes=sample_metadata.get_column('barcode-sequence'),
+                    barcodes=barcode_sequence,
                     rev_comp_mapping_barcodes=True),
-    use.UsageOutputNames(per_sample_sequences='demultiplexed_sequences_full',
+    use.UsageOutputNames(per_sample_sequences='demultiplexed_sequences_full.qza',
                          error_correction_details='demux_details'),
+)
+```
+
+Let’s subsample the data. We will perform this subsampling in this tutorial for two reasons - 
+one, to speed up the tutorial run time, and two, to demonstrate the functionality.
+
+
+```{usage}
+
+def full_factory():
+    import qiime2
+
+    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_full)
+    return a
+
+demultiplexed_sequences_full = use.init_artifact('demultiplexed_sequences', full_factory)
+
+use.action(
+    use.UsageAction(plugin_id='demux', action_id='subsample_paired'),
+    use.UsageInputs(sequences=demultiplexed_sequences_full, 
+                    fraction=0.3),
+    use.UsageOutputNames(subsampled_sequences='demultiplexed_sequences_subsample'),
+)
+```
+
+
+```{usage}
+
+def subsample_factory():
+    import qiime2
+
+    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_subsample)
+    return a
+
+demultiplexed_sequences_subsample_copy = use.init_artifact('demultiplexed_sequences_subsample_copy', subsample_factory)
+
+use.action(
+    use.UsageAction(plugin_id='demux', action_id='summarize'),
+    use.UsageInputs(data=demultiplexed_sequences_subsample_copy),
+    use.UsageOutputNames(visualization='demultiplexed_sequences_subsample_view'),
+)
+
+```
+
+Let’s take a look at the summary in demux-subsample.qzv. 
+In the “Per-sample sequence counts” table on the “Overview” tab, there are 75 samples in the data. 
+If we look at the last 20 or so rows in the table, though, we will observe 
+that many samples have fewer than 100 reads in them - let’s filter those samples out of the data:
+
+```{usage}
+
+def export_factory(metadata_dir):
+    import qiime2
+
+    a = qiime2.Metadata.load('per_sample_fastq_counts', metadata_dir)
+
+    return a
+
+
+def filter_factory():
+    import qiime2
+
+    b = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_subsample)
+    
+    return b
+
+vis = qiime2.Visualization.load('demultiplexed_sequences_subsample_view')
+dirfmt = vis.view(vis.format)
+vzDir = str(dirfmt)
+metadata_dir = vzDir + 'per-sample-fastq-counts.tsv'
+
+metadata = use.init_metadata("metadata", export_factory(metadata_dir))
+
+demultiplexed_sequences_top100 = use.init_artifact('demultiplexed_sequences_top100', filter_factory)
+
+use.action(
+    use.UsageAction(plugin_id='demux', action_id='filter-samples'),
+    use.UsageInputs(data=demultiplexed_sequences_subsample_100,
+                    metadata=metadata,
+                    where = 'CAST([forward sequence count] AS INT) > 100'),
+    use.UsageOutputNames(filtered_demux='demultiplexed_sequences_top100'),
 )
 ```
