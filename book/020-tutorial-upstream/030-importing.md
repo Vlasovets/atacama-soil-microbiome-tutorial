@@ -24,7 +24,7 @@ which allows for the following commands to be run relatively quickly, however, w
 We'll begin with the data import.
 
 ```{usage}
-def single_directory_factory():
+def emp_directory_factory():
     import tempfile
     import requests
     import shutil
@@ -32,12 +32,11 @@ def single_directory_factory():
     import os
 
     import qiime2
-    from q2_types.per_sample_sequences import \
-        CasavaOneEightSingleLanePerSampleDirFmt
+    from q2_demux._format import EMPPairedEndDirFmt
 
-    forward_sequence_data_url = 'https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/forward.fastq.gz'
-    reverse_sequence_data_url = 'https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/forward.fastq.gz'
-    barcode_sequence_data_url = 'https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/reverse.fastq.gz'
+    forward_sequence_data_url = "https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/forward.fastq.gz"
+    reverse_sequence_data_url = "https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/reverse.fastq.gz"
+    barcode_sequence_data_url = "https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/barcodes.fastq.gz"
     
     for url in [forward_sequence_data_url, reverse_sequence_data_url, barcode_sequence_data_url]:
         
@@ -46,27 +45,26 @@ def single_directory_factory():
             f.write(data.content)
             f.flush()
     
-            dir_fmt = CasavaOneEightSingleLanePerSampleDirFmt()
+            dir_fmt = EMPPairedEndDirFmt()
             
             with gzip.open(f.name, 'rb') as f_in:
                 new_file_name = os.path.splitext(f.name)[0]
-                with open(f.name, 'wb') as f_out:
+                with open(new_file_name, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
 
     return dir_fmt
 
-data_to_import = use.init_format('data_to_import', single_directory_factory)
+data_to_import = use.init_format('data_to_import', emp_directory_factory)
 ```
 
 ```{usage}
-from q2_types.per_sample_sequences import \
-    CasavaOneEightSingleLanePerSampleDirFmt
+from q2_demux._format import EMPPairedEndDirFmt
 
 emp_paired_end_sequences = use.import_from_format(
     'emp_paired_end_sequences',
     semantic_type='EMPPairedEndSequences',
     variable=data_to_import,
-    view_type=CasavaOneEightSingleLanePerSampleDirFmt)
+    view_type=EMPPairedEndDirFmt)
 ```
 
 ## Generating and viewing a summary of the imported data
