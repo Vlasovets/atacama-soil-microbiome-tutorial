@@ -33,9 +33,8 @@ def read_metadata():
     data = requests.get(sample_metadata_url)
     with tempfile.NamedTemporaryFile() as f:
         f.write(data.content)
-        sample_metadata = pd.read_csv(f.name, sep='\t', index_col=0)
-
-    return qiime2.Metadata(sample_metadata)
+        
+        return qiime2.Metadata.load(f.name)
 
 
 sample_metadata = use.init_metadata('sample_metadata', read_metadata)
