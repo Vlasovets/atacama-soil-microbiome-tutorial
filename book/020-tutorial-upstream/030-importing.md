@@ -52,7 +52,7 @@ def emp_directory_factory():
                 with open(new_file_name, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
 
-    return dir_fmt
+    return dir_fmt.path
 
 data_to_import = use.init_format('data_to_import', emp_directory_factory)
 ```
