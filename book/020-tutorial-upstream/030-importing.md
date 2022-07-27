@@ -1,4 +1,4 @@
-# Importing, demultiplexing and filtering sequence data
+# Importing, demultiplexing and subsampling
 
 ```{usage-scope}
 ---
