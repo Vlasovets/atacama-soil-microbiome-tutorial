@@ -25,35 +25,36 @@ We'll begin with the data import.
 
 ```{usage}
 def emp_directory_factory():
-    import tempfile
-    import requests
-    import shutil
-    import gzip
     import os
+    import tempfile
+    from urllib import request
 
-    import qiime2
     from q2_demux._format import EMPPairedEndDirFmt
+    from q2_types.per_sample_sequences import FastqGzFormat
 
-    forward_sequence_data_url = "https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/forward.fastq.gz"
-    reverse_sequence_data_url = "https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/reverse.fastq.gz"
-    barcode_sequence_data_url = "https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/barcodes.fastq.gz"
-    
-    for url in [forward_sequence_data_url, reverse_sequence_data_url, barcode_sequence_data_url]:
+    base_url = 'https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/'
+    forward_sequence_data_url = base_url + "forward.fastq.gz"
+    reverse_sequence_data_url = base_url + "reverse.fastq.gz"
+    barcode_sequence_data_url =  base_url + "barcodes.fastq.gz"    
+    fmt = EMPPairedEndDirFmt(mode='w')
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        bc_fp = os.path.join(tmpdir, 'barcodes.fastq.gz')
+        bc_fn, _ = request.urlretrieve(barcode_sequence_data_url, bc_fp)
+
+        forward_fp = os.path.join(tmpdir, 'forward.fastq.gz')
+        forward_fn, _ = request.urlretrieve(forward_sequence_data_url, forward_fp)
         
-        data = requests.get(url)
-        with tempfile.NamedTemporaryFile(mode='w+b') as f:
-            f.write(data.content)
-            f.flush()
+        reverse_fp = os.path.join(tmpdir, 'reverse.fastq.gz')
+        reverse_fn, _ = request.urlretrieve(reverse_sequence_data_url, reverse_fp)
+        
+        fmt.barcodes.write_data(bc_fn, FastqGzFormat)
+        fmt.forward.write_data(forward_fn, FastqGzFormat)
+        fmt.reverse.write_data(reverse_fn, FastqGzFormat)
+
+    fmt.validate()
+    return fmt
     
-            dir_fmt = EMPPairedEndDirFmt()
-            
-            with gzip.open(f.name, 'rb') as f_in:
-                new_file_name = os.path.splitext(f.name)[0]
-                with open(new_file_name, 'wb') as f_out:
-                    shutil.copyfileobj(f_in, f_out)
-
-    return dir_fmt.path
-
 data_to_import = use.init_format('data_to_import', emp_directory_factory)
 ```
 
