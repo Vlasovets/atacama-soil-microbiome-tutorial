@@ -13,24 +13,24 @@ default-interface: galaxy-usage
 ```
 
 ## Performing sequence quality control (i.e., denoising)
-
-Next, we'll perform quality control or denoising of the sequence data with
-DADA2 {cite:t}`callahan-dada2-2016`, which is accessible through the q2-dada2
-plugin.
-Since our reads are paired end, we'll use the `denoise_paired` action in the
+Next, we’ll look at the sequence quality based on ten-thousand randomly selected reads from 
+the subsampled and filtered data, and then denoise the data. When you view the quality plots, 
+note that in contrast to the corresponding plots in the moving pictures tutorial, 
+there are now two interactive plots to be considered together. 
+The plot on the left presents the quality scores for the forward reads, and the plot on the right presents 
+the quality scores for the reverse reads. We’ll use these plots to determine what trimming parameters we want to use 
+for denoising with DADA2 {cite:t}`callahan-dada2-2016`, which is accessible through the q2-dada2
+plugin. Since our reads are paired end, we'll use the `denoise_paired` action in the
 q2-dada2 plugin. This performs quality filtering, chimera checking, and paired-
 end read joining.
 
-The `denoise_paired` action requires a few parameters that you'll set based
-on the sequence quality score plots that you previously generated in the
-summary of the demultiplex reads. You should review those plots and identify
-where the quality begins to decrease, and use that information to set the
-`trunc_len_*` parameters. You'll set that for both the forward and reverse
-reads using the `trunc_len_f` and `trunc_len_r` parameters, respectively. If
-you notice a region of lower quality in the beginning of the forward and/or
-reverse reads, you can optionally trim bases from the beginning of the reads
-using the `trim_left_f` and `trim_left_r` parameters for the forward and
-reverse reads, respectively.
+In this example we have 150-base forward and reverse reads. 
+Since we need the reads to be long enough to overlap when joining paired ends, 
+the first thirteen bases of the forward and reverse reads are being trimmed, 
+but no trimming is being applied to the ends of the sequences to avoid reducing the read length by too much. 
+In this example, the same values are being provided for `--p-trim-left-f` and `--p-trim-left-r` 
+and for `--p-trunc-len-f` and `--p-trunc-len-r`, but that is not a requirement.
+
 
 Spend a couple of minutes reviewing the quality score plots and think about
 where you might want to truncate the forward and reverse reads, and if you'd
@@ -41,7 +41,7 @@ like to trim any bases from the beginnings.
 
 I typically try to apply some objective criteria when selecting these values.
 For example, in reviewing the quality score plots, I noticed that the
-twenty-fifth percentile quality score drops below 30 at position 204 in the
+twenty-fifth percentile quality score drops below 13 at position 204 in the
 forward reads and 205 in the reverse reads. I chose to use those values for
 the required truncation lengths.
 
@@ -53,25 +53,36 @@ probably unnecessary here, but is useful here for illustrating how this works.
 ````
 
 ```{usage}
-asv_sequences_0, feature_table_0, dada2_stats = use.action(
+
+def demux_factory():
+    import qiime2
+
+    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_filtered)
+    return a
+
+demux = use.init_artifact('demux', demux_factory)
+
+rep_seqs, table, denoising_stats = use.action(
     use.UsageAction(plugin_id='dada2', action_id='denoise_paired'),
-    use.UsageInputs(demultiplexed_seqs=demultiplexed_sequences,
-                    trunc_len_f=204,
-                    trim_left_r=1, trunc_len_r=205,),
-    use.UsageOutputNames(representative_sequences='asv_sequences_0',
-                        table='feature_table_0',
-                        denoising_stats='dada2_stats')
+    use.UsageInputs(demultiplexed_seqs=demux,
+                    trim_left_f=13, 
+                    trim_left_r=13, 
+                    trunc_len_f=150,
+                    trunc_len_r=150,),
+    use.UsageOutputNames(representative_sequences='rep-seqs',
+                        table='table',
+                        denoising_stats='denoising_stats')
 )
 ```
 
 ## Reviewing the DADA2 run statistics
 
-The first output of DADA2 that we'll look at is the run statistics. You can
-generate a viewable summary using the following command. This file will tell
-you how many reads were filtered from each sample and why.
+At this stage, you will have artifacts containing the feature table, 
+corresponding feature sequences, and DADA2 denoising stats. 
+You can generate summaries of these as follows.
 
 ```{usage}
-stats_as_md = use.view_as_metadata('stats_dada2_md', dada2_stats)
+stats_as_md = use.view_as_metadata('stats_dada2_md', denoising_stats)
 
 use.action(
     use.UsageAction(plugin_id='metadata', action_id='tabulate'),
@@ -93,15 +104,16 @@ each of these files.
 ```{usage}
 use.action(
     use.UsageAction(plugin_id='feature_table', action_id='summarize'),
-    use.UsageInputs(table=feature_table_0, sample_metadata=sample_metadata),
-    use.UsageOutputNames(visualization='feature_table_0_summ'),
+    use.UsageInputs(table=table, sample_metadata=sample_metadata),
+    use.UsageOutputNames(visualization='table_summ'),
 )
 
 use.action(
     use.UsageAction(plugin_id='feature_table', action_id='tabulate_seqs'),
-    use.UsageInputs(data=asv_sequences_0),
-    use.UsageOutputNames(visualization='asv_sequences_0_summ'),
+    use.UsageInputs(data=rep_seqs),
+    use.UsageOutputNames(visualization='rep_seqs_summ'),
 )
+
 ```
 
 ```{note}

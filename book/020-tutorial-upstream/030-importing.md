@@ -1,4 +1,4 @@
-# Importing demultiplexed sequence data
+# Importing, demultiplexing and subsampling
 
 ```{usage-scope}
 ---
@@ -11,48 +11,61 @@ name: tutorial
 default-interface: galaxy-usage
 ---
 ```
-
 In this section of the tutorial, we'll import raw fastq data that is already
 demultiplexed (i.e., separated into per-sample fastq files) into a QIIME 2
 artifact.
+You will download three fastq.gz files, corresponding to the forward, reverse, and barcode (i.e., index) reads. 
+These files contain a subset of the reads in the full data set generated for this study, 
+which allows for the following commands to be run relatively quickly, however, we will perform additional subsampling in this tutorial to further improve the run time.
+
 
 ## Importing
 
 We'll begin with the data import.
 
 ```{usage}
-def casava_directory_factory():
+def emp_directory_factory():
+    import os
     import tempfile
-    import requests
-    import shutil
+    from urllib import request
 
-    import qiime2
-    from q2_types.per_sample_sequences import \
-        CasavaOneEightSingleLanePerSampleDirFmt
+    from q2_demux._format import EMPPairedEndDirFmt
+    from q2_types.per_sample_sequences import FastqGzFormat
 
-    sequence_data_url = 'https://data.qiime2.org/2022.2/tutorials/liao/fastq-casava.zip'
-    data = requests.get(sequence_data_url)
-    with tempfile.NamedTemporaryFile(mode='w+b') as f:
-        f.write(data.content)
-        f.flush()
+    base_url = 'https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/'
+    forward_sequence_data_url = base_url + "forward.fastq.gz"
+    reverse_sequence_data_url = base_url + "reverse.fastq.gz"
+    barcode_sequence_data_url =  base_url + "barcodes.fastq.gz"    
+    fmt = EMPPairedEndDirFmt(mode='w')
 
-        dir_fmt = CasavaOneEightSingleLanePerSampleDirFmt()
-        shutil.unpack_archive(f.name, str(dir_fmt), 'zip')
+    with tempfile.TemporaryDirectory() as tmpdir:
+        bc_fp = os.path.join(tmpdir, 'barcodes.fastq.gz')
+        bc_fn, _ = request.urlretrieve(barcode_sequence_data_url, bc_fp)
 
-    return dir_fmt
+        forward_fp = os.path.join(tmpdir, 'forward.fastq.gz')
+        forward_fn, _ = request.urlretrieve(forward_sequence_data_url, forward_fp)
+        
+        reverse_fp = os.path.join(tmpdir, 'reverse.fastq.gz')
+        reverse_fn, _ = request.urlretrieve(reverse_sequence_data_url, reverse_fp)
+        
+        fmt.barcodes.write_data(bc_fn, FastqGzFormat)
+        fmt.forward.write_data(forward_fn, FastqGzFormat)
+        fmt.reverse.write_data(reverse_fn, FastqGzFormat)
 
-data_to_import = use.init_format('data_to_import', casava_directory_factory)
+    fmt.validate()
+    return fmt
+    
+data_to_import = use.init_format('data_to_import', emp_directory_factory)
 ```
 
 ```{usage}
-from q2_types.per_sample_sequences import \
-    CasavaOneEightSingleLanePerSampleDirFmt
+from q2_demux._format import EMPPairedEndDirFmt
 
-demultiplexed_sequences = use.import_from_format(
-    'demultiplexed_sequences',
-    semantic_type='SampleData[PairedEndSequencesWithQuality]',
+emp_paired_end_sequences = use.import_from_format(
+    'emp_paired_end_sequences',
+    semantic_type='EMPPairedEndSequences',
     variable=data_to_import,
-    view_type=CasavaOneEightSingleLanePerSampleDirFmt)
+    view_type=EMPPairedEndDirFmt)
 ```
 
 ## Generating and viewing a summary of the imported data
@@ -72,9 +85,96 @@ and you'll need to extract information from these plots to perform quality
 control on the data in the next step of the tutorial.
 
 ```{usage}
+
+barcode_sequence = use.get_metadata_column('barcode_sequence', 'barcode-sequence', sample_metadata)
+
+use.action(
+    use.UsageAction(plugin_id='demux', action_id='emp_paired'),
+    use.UsageInputs(seqs=emp_paired_end_sequences, 
+                    barcodes=barcode_sequence,
+                    rev_comp_mapping_barcodes=True),
+    use.UsageOutputNames(per_sample_sequences='demultiplexed_sequences_full.qza',
+                         error_correction_details='demux_details'),
+)
+```
+
+Let’s subsample the data. We will perform this subsampling in this tutorial for two reasons - 
+one, to speed up the tutorial run time, and two, to demonstrate the functionality.
+
+
+```{usage}
+
+def full_factory():
+    import qiime2
+
+    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_full)
+    return a
+
+demultiplexed_sequences_full = use.init_artifact('demultiplexed_sequences', full_factory)
+
+use.action(
+    use.UsageAction(plugin_id='demux', action_id='subsample_paired'),
+    use.UsageInputs(sequences=demultiplexed_sequences_full, 
+                    fraction=0.3),
+    use.UsageOutputNames(subsampled_sequences='demultiplexed_sequences_subsample'),
+)
+```
+
+
+```{usage}
+
+def subsample_factory():
+    import qiime2
+
+    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_subsample)
+    return a
+
+demultiplexed_sequences_subsample_copy = use.init_artifact('demultiplexed_sequences_subsample_copy', subsample_factory)
+
 use.action(
     use.UsageAction(plugin_id='demux', action_id='summarize'),
-    use.UsageInputs(data=demultiplexed_sequences),
-    use.UsageOutputNames(visualization='demultiplexed_sequences_summ'),
+    use.UsageInputs(data=demultiplexed_sequences_subsample_copy),
+    use.UsageOutputNames(visualization='demultiplexed_sequences_subsample_view'),
+)
+
+```
+
+Let’s take a look at the summary in demux-subsample.qzv. 
+In the “Per-sample sequence counts” table on the “Overview” tab, there are 75 samples in the data. 
+If we look at the last 20 or so rows in the table, though, we will observe 
+that many samples have fewer than 100 reads in them - let’s filter those samples out of the data:
+
+```{usage}
+  
+def export_factory():
+    import qiime2
+
+    a = qiime2.Visualization.load('demultiplexed_sequences_subsample_view')
+    
+    dirfmt = a.view(a.format)
+    vzDir = str(dirfmt)
+    metadata_dir = vzDir + 'per-sample-fastq-counts.tsv'
+    
+    
+    return qiime2.Visualization.export_data(a, metadata_dir)
+
+
+def filter_factory():
+    import qiime2
+
+    b = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_subsample)
+    
+    return b
+
+metadata = use.init_metadata('Type[Metadata]', export_factory)
+
+demultiplexed_sequences_top100 = use.init_artifact('demultiplexed_sequences_top100', filter_factory)
+
+use.action(
+    use.UsageAction(plugin_id='demux', action_id='filter_samples'),
+    use.UsageInputs(demux=demultiplexed_sequences_top100,
+                    metadata=metadata,
+                    where = 'CAST([forward sequence count] AS INT) > 100'),
+    use.UsageOutputNames(filtered_demux='demultiplexed_sequences_filtered'),
 )
 ```

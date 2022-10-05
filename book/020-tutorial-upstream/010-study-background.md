@@ -1,22 +1,24 @@
-# Hematopoietic cell transplantation data
+# Atacama Soil Microbiome Data
 
-This tutorial focuses on data reused from [Liao et al (2021) _Compilation of
-longitudinal microbiota data and hospitalome from hematopoietic cell
-transplantation patients_](https://www.nature.com/articles/s41597-021-00860-8)
-({cite:t}`liao-data-2021`).
+This tutorial is designed to serve two purposes. 
+First, it illustrates the initial processing steps of paired-end read analysis, up to the point where the analysis steps
+are identical to single-end read analysis. This includes the importing, demultiplexing, and denoising steps, 
+and results in a feature table and the associated feature sequences. Second, this is intended to be a self-guided exercise
+that could be run after the moving pictures tutorial to gain more experience with QIIME 2. For this exercise, 
+we provide some questions that can be used to guide your analysis, but do not provide commands that will allow you to address each. 
+Instead, you should apply the commands that you learned in the moving pictures tutorial.
 
-We thank the study participants for the contribution of their valuable samples
-while undergoing cancer treatment, and we thank {cite:t}`liao-data-2021` for
-their considerable efforts to make these data accessible to the cancer
-microbiome research community.
+In this tutorial you’ll use QIIME 2 to perform an analysis of soil samples from the Atacama Desert in northern Chile. 
+The Atacama Desert is one of the most arid locations on Earth, with some areas receiving less than a millimeter of rain per decade. 
+Despite this extreme aridity, there are microbes living in the soil. The soil microbiomes profiled in this study follow
+two east-west transects, Baquedano and Yungay, across which average soil relative humidity is positively correlated with
+elevation (higher elevations are less arid and thus have higher average soil relative humidity). Along these transects, 
+pits were dug at each site and soil samples were collected from three depths in each pit.
 
-Any work that uses these data should cite {cite:t}`liao-data-2021`
-**and** the original studies (which are all cited in
-{cite:t}`liao-data-2021`). Our analyses will primarily focus on the samples
-collected for [_Reconstitution of the gut microbiota of antibiotic-treated
-patients by autologous fecal microbiota
-transplant_](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6468978/)
-({cite:t}`taur-autofmt-2018`).
+This tutorial focuses on data reused from [Fuentes et al (2021) Influence of Physical-Chemical Soil Parameters on Microbiota Composition and Diversity 
+             in a Deep Hyperarid Core of the Atacama Desert](https://www.frontiersin.org/articles/10.3389/fmicb.2021.794743/full)
+({cite:t}`fuentes2021influence`).
+
 
 ## Structure of the tutorial
 
