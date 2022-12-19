@@ -5,6 +5,10 @@ from matplotlib import pyplot as plt
 
 
 def plot_heatmap(cov, precision, mask, low_rank=None, low=False):
+    
+    meta_ticks = np.array(cov.columns[-14:]) # TO DO: change according to the data
+    bug_ticks = np.arange(len(cov.columns[:-14]))
+    ticks = np.hstack((bug_ticks, meta_ticks))
 
     left = 0.125  # the left side of the subplots of the figure
     right = 0.9  # the right side of the subplots of the figure
