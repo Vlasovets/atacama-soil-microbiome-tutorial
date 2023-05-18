@@ -22,6 +22,7 @@ from itertools import chain
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
+from pyvis.network import Network
 
 from bokeh.io import output_notebook, show, save
 from bokeh.models import Range1d, Circle, ColumnDataSource, MultiLine, HoverTool, LabelSet, PointDrawTool
@@ -320,26 +321,26 @@ def _get_order(data: pd.DataFrame, method: str = 'average', metric: str = 'eucli
     return clust_order
 
 
-def hierarchical_clustering(data: pd.DataFrame, clust_order: list, n_covariates: int = None):
+def hierarchical_clustering(data: pd.DataFrame, order: list, n_covariates: int = None):
     """
     Performs hierarchical clustering on the input DataFrame using 
     the provided cluster order and returns the reorganized DataFrame.
 
     Args:
         data (pd.DataFrame): The input DataFrame.
-        clust_order (list): The cluster order as a list of indices.
+        order (list): The cluster order as a list of indices.
         n_covariates (int, optional): The number of covariates. Defaults to None.
 
     Returns:
         pd.DataFrame: The reorganized DataFrame.
     """
     if n_covariates is None:
-        re_data = data.iloc[clust_order, clust_order]
+        re_data = data.iloc[order, order]
 
     else:
         asv_part = data.iloc[:-n_covariates, :-n_covariates]
-        re_asv_part = asv_part.iloc[clust_order, clust_order]
-        cov_asv_part = data.iloc[:-n_covariates, -n_covariates:].iloc[clust_order, :]
+        re_asv_part = asv_part.iloc[order, order]
+        cov_asv_part = data.iloc[:-n_covariates, -n_covariates:].iloc[order, :]
         cov_part = data.iloc[-n_covariates:, -n_covariates:]
 
         res = np.block([[re_asv_part.values, cov_asv_part.values],
@@ -351,14 +352,14 @@ def hierarchical_clustering(data: pd.DataFrame, clust_order: list, n_covariates:
     return re_data
 
 
-def plot_heatmap(data: pd.DataFrame, order: list, n_covariates: int=None,
+def plot_ordered_heatmap(data: pd.DataFrame, order: list(), n_covariates: int=None,
                  title: str=" ", width: int=1500, height: int=1500, label_size: str="16pt"):
     """
     Plots a heatmap using the input DataFrame and additional parameters.
 
     Args:
         data (pd.DataFrame): The input DataFrame.
-        list: The order as a list of indices.
+        order: The order as a list of indices.
         n_covariates (int, optional): The number of covariates. Defaults to None.
         title (str, optional): The title of the heatmap. Defaults to " ".
         width (int, optional): The width of the heatmap in pixels. Defaults to 1500.
@@ -368,12 +369,74 @@ def plot_heatmap(data: pd.DataFrame, order: list, n_covariates: int=None,
     Returns:
         [type]: The plotted heatmap.
     """
-    clust_data = hierarchical_clustering(data, clust_order = clust_order, n_covariates=n_covariates)
+    clust_data = hierarchical_clustering(data, order=order, n_covariates=n_covariates)
     lables_clust, re_labels_clust = create_label_dict(clust_data)
 
     p = _make_heatmap(data=clust_data, title=title, width=width, height=height, label_size=label_size,
                       labels_dict=lables_clust, labels_dict_reversed=re_labels_clust)
     return p
+
+
+def create_network_visualization(G_adapt, height: int = 1500, width: int = 1800, show_labels: bool = False, size_degree: bool = False,
+                                 scale_edge: int = 2, scale_node: int = 1):
+    """
+    Creates a network visualization using Pyvis library and returns the Pyvis Network object.
+
+    Parameters:
+        G_adapt (networkx.Graph): The graph data loaded from NetworkX.
+        height (int): The height of the network visualization in pixels. Default is 1500.
+        width (int): The width of the network visualization in pixels. Default is 1800.
+        show_labels (bool): Whether to show edge labels. Default is False.
+        size_degree (bool): Whether to adjust node sizes based on degree. Default is False.
+        scale_edge (int): Scaling factor for edge widths. Default is 2.
+        scale_node (int): Scaling factor for node sizes when using size_degree. Default is 1.
+
+    Returns:
+        pyvis.network.Network: The Pyvis Network object representing the network visualization.
+    """
+    # Create a Pyvis network
+    net = Network(height=f"{height}px", width=f"{width}px", directed=False, cdn_resources='in_line', notebook=True)
+
+    # Load the graph data from NetworkX
+    net.from_nx(G_adapt)
+
+    # Disable physics simulation
+    net.toggle_physics(False)
+
+    if size_degree:
+        # Calculate the degree of each node
+        degrees = dict(G_adapt.degree())
+
+        # Set node sizes based on degree
+        for node in net.nodes:
+            node_id = node['id']
+            if node_id in degrees:
+                node['size'] = degrees[node_id] * scale_node  # Adjust the scaling factor as needed
+
+    # Set edge and node styles
+    for edge in net.edges:
+        edge['width'] = edge['covariance'] * scale_edge
+
+        if show_labels:
+            edge['label'] = str(round(edge['covariance'], 2))
+        if edge['covariance'] < 0:
+            edge['color'] = "red"
+            if show_labels:
+                edge['font'] = {'multi': 'true', 'size': 15, 'color': 'blue', 'face': 'arial', 'align': 'top'}
+        else:
+            edge['color'] = "green"
+            if show_labels:
+                edge['font'] = {'multi': 'true', 'size': 15, 'color': 'red', 'face': 'arial', 'align': 'top'}
+
+    for node in net.nodes:
+        if "ASV" in node['label'] or "g_" in node['label']:
+            node['color'] = '#610053'
+        else:
+            node['color'] = '#FA4665'
+
+        node['font'] = {'multi': 'true', 'size': 20, 'color': 'black', 'face': 'arial', 'align': 'left'}
+
+    return net
 
 
 def normalize(X):
