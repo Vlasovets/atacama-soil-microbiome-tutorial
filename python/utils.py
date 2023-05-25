@@ -415,16 +415,17 @@ def create_network_visualization(G_adapt, height: int = 1500, width: int = 1800,
 
     # Set edge and node styles
     for edge in net.edges:
-        edge['width'] = edge['covariance'] * scale_edge
+        edge['width'] = abs(edge['covariance']) * scale_edge
+        edge['length'] = 2000
 
         if show_labels:
             edge['label'] = str(round(edge['covariance'], 2))
         if edge['covariance'] < 0:
-            edge['color'] = "red"
+            edge['color'] = '#f1ac8b' #red
             if show_labels:
                 edge['font'] = {'multi': 'true', 'size': 15, 'color': 'blue', 'face': 'arial', 'align': 'top'}
         else:
-            edge['color'] = "green"
+            edge['color'] = "#abe4ff" #blue
             if show_labels:
                 edge['font'] = {'multi': 'true', 'size': 15, 'color': 'red', 'face': 'arial', 'align': 'top'}
 
@@ -437,6 +438,7 @@ def create_network_visualization(G_adapt, height: int = 1500, width: int = 1800,
         node['font'] = {'multi': 'true', 'size': 20, 'color': 'black', 'face': 'arial', 'align': 'left'}
 
     return net
+
 
 
 def normalize(X):
@@ -530,8 +532,23 @@ def transform_features(X: pd.DataFrame, transformation: str = "clr", pseudo_coun
             "Unknown transformation name, use clr and not %r" % transformation
         )
         
-        
+
 def PCA(X, L, inverse=True):
+    """
+    Perform Principal Component Analysis (PCA) on the given data.
+
+    Parameters:
+        X (pandas.DataFrame): Transformed data matrix.
+        L (numpy.ndarray): Low-rank matrix.
+        inverse (bool, optional): Determines whether to compute inverse PCA or regular PCA. Defaults to True.
+
+    Returns:
+        tuple: A tuple containing the following:
+            - zu (numpy.ndarray): The projected data matrix.
+            - loadings (numpy.ndarray): The loadings matrix.
+            - sig (numpy.ndarray): The rounded singular values.
+
+    """
     sig, V = np.linalg.eigh(L)
 
     # sort eigenvalues in descending order
@@ -549,6 +566,7 @@ def PCA(X, L, inverse=True):
     zu = X.values @ loadings
 
     return zu, loadings, np.round(sig[ind].squeeze(), 3)
+
 
 
 def scale_array_by_diagonal(X, d = None):
@@ -810,17 +828,34 @@ def create_label_dict(df):
     return labels_dict, labels_dict_reversed
 
 
-def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, y=str, PC=0):
-    proj, loadings, eigv = PCA(counts.dropna(), L, inverse=True)
+def project_covariates(transformed_counts=pd.DataFrame(), raw_counts = pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, y=str, PC=0):
+    """
+    Perform covariate projection and create a scatter plot using PCA results.
+
+    Parameters:
+        transformed_counts (pandas.DataFrame, optional): Transformed count data. Default is an empty DataFrame.
+        raw_counts (pandas.DataFrame, optional): Raw count data. Default is an empty DataFrame.
+        metadata (pandas.DataFrame, optional): Metadata associated with the samples. Default is an empty DataFrame.
+        L (numpy.ndarray): Eigenvalues matrix.
+        y (str): Name of the variable to plot on the y-axis.
+        PC (int): Index of the principal component to plot on the x-axis. Default is 0.
+
+    Returns:
+        bokeh.layouts.row: A row layout containing the scatter plot and color bar.
+
+    """
     r = np.linalg.matrix_rank(L)
+    proj, loadings, eigv = PCA(transformed_counts, L, inverse=True)
+
     eigv_sum = np.sum(eigv)
     var_exp = [(value / eigv_sum) for value in sorted(eigv, reverse=True)]
-    
-    depth = pd.DataFrame(data=raw.sum(axis=0), columns=["sequencing depth"])
+
+    counts_sum = raw_counts.sum(axis=0)
+    depth = pd.DataFrame(data=counts_sum, columns=["sequencing depth"])
     metadata = depth.join(metadata)
-    
+
     pc_columns = list('PC{0} ({1}%)'.format(i+1, str(100 * var_exp[i])[:4]) for i in range(0, r))
-    df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
+    df_proj = pd.DataFrame(proj, columns=pc_columns, index=Z_mclr.index)
     df = df_proj.join(metadata)
     
     varName1 = 'PC{0} ({1}%)'.format(PC+1, str(100 * var_exp[PC])[:4])
@@ -841,7 +876,7 @@ def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndar
     
     
     
-    rdbu = plt.get_cmap('Blues_r')
+    rdbu = plt.get_cmap('RdPu_r')
     cmap = ListedColormap(rdbu(np.arange(256)))
     # Create a list of hex color codes from the colormap
     colors = [cmap(i)[:3] for i in range(256)]
@@ -868,16 +903,34 @@ def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndar
     return layout
 
 
-def scater_plot(x, y, width=800, height=600, size=3):
+def scater_plot(x, y, width=800, height=600, size=3, color='#610053'):
+    """
+    Create a scatter plot using the given x and y data.
+
+    Parameters:
+        x (pandas.Series or numpy.ndarray): Data for the x-axis.
+        y (pandas.Series or numpy.ndarray): Data for the y-axis.
+        width (int, optional): Width of the plot. Default is 800.
+        height (int, optional): Height of the plot. Default is 600.
+        size (int, optional): Size of the data points. Default is 3.
+        color (str, optional): Color of the data points. Default is '#610053'.
+
+    Returns:
+        bokeh.plotting.figure.Figure: Scatter plot figure.
+
+    """
     bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, crosshair, reset, hover"]
     p = figure(plot_width=width, plot_height=height, tools=bokeh_tools, toolbar_location='left')
 
     source = ColumnDataSource({'x': x, 'y': y})
 
-    p.circle("x", "y", size=3*size, source=source, line_color=None)
+    p.circle("x", "y", size=3*size, source=source, line_color=None, fill_color=color)
 
     p.xaxis.axis_label = x.name
     p.yaxis.axis_label = y.name
+    
+    p.xgrid.grid_line_color = None  # Remove x-axis grid lines
+    p.ygrid.grid_line_color = None  # Remove y-axis grid lines
     
     return p
 
