@@ -283,6 +283,78 @@ def create_lambda_mask(counts, p, p_meta):
     mask[0:p, 0:p] += asv_block - 0.01
     return mask
 
+def process_clust_order(pc: pd.DataFrame, asv: pd.DataFrame, clust_order: list) -> tuple:
+    """
+    Process the cluster order for pc and asv DataFrames based on the given clust_order.
+
+    Args:
+        pc (pd.DataFrame): The pc DataFrame.
+        asv (pd.DataFrame): The asv DataFrame.
+        clust_order (list): The list specifying the order of clusters.
+
+    Returns:
+        tuple: A tuple containing the processed pc and asv DataFrames.
+
+    """
+    if clust_order:
+        pc = pc.iloc[clust_order, :]
+        asv = asv.iloc[clust_order, clust_order]
+
+    return pc, asv
+
+
+def concatenate_PC(solution: pd.DataFrame, pc_components: np.ndarray, number_pc: int, index: list, clust_order: list) -> pd.DataFrame:
+    """
+    Concatenate the solution DataFrame with PC components, covariates, and correlation matrices.
+
+    Args:
+        solution (pd.DataFrame): The solution DataFrame.
+        pc_components (np.ndarray): The PC components.
+        number_pc (int): The number of PC components.
+        index (list): The index for the PC components.
+        clust_order (list): The list specifying the order of clusters.
+
+    Returns:
+        pd.DataFrame: The concatenated result DataFrame.
+
+    """
+    pc = pd.DataFrame(pc_components, index=index)
+    component_names = [f"PC{i}" for i in range(1, number_pc+1)]
+    pc.columns = component_names
+    #data shape
+    p = solution.shape[0]  
+    m = len(index)
+    
+    k = p - m
+    pc_cov = np.zeros((k, number_pc))
+    
+    # PC are lin independant => identity matrix is a correlation
+    eye = np.eye(number_pc, number_pc)
+    
+    asv = solution.iloc[:m, :m]
+    cov = solution.iloc[:-k, -k:]
+    cov_cov = solution.iloc[-k:, -k:]
+    
+    # joint model with covariates
+    if p > m:
+        pc, asv = process_clust_order(pc=pc, asv=asv, clust_order=clust_order)
+        col_names = list(asv.columns) + list(cov.columns) + list(pc.columns)
+        
+        res = np.block([[asv,    cov,      pc     ],
+                        [cov.T,  cov_cov,  pc_cov ],
+                        [pc.T,   pc_cov.T, eye    ]])
+    
+    else:
+        pc, asv = process_clust_order(pc=pc, asv=asv, clust_order=clust_order)
+        col_names = list(asv.columns) + list(pc.columns)
+        
+        res = np.block([[asv,  pc ],
+                        [pc.T, eye]])
+        
+    res_df = pd.DataFrame(res, index=col_names, columns=col_names)
+    
+    return res_df
+
 
 def create_label_dict(df):
     """
@@ -855,7 +927,7 @@ def project_covariates(transformed_counts=pd.DataFrame(), raw_counts = pd.DataFr
     metadata = depth.join(metadata)
 
     pc_columns = list('PC{0} ({1}%)'.format(i+1, str(100 * var_exp[i])[:4]) for i in range(0, r))
-    df_proj = pd.DataFrame(proj, columns=pc_columns, index=Z_mclr.index)
+    df_proj = pd.DataFrame(proj, columns=pc_columns, index=transformed_counts.index)
     df = df_proj.join(metadata)
     
     varName1 = 'PC{0} ({1}%)'.format(PC+1, str(100 * var_exp[PC])[:4])
