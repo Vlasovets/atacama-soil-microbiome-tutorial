@@ -487,22 +487,24 @@ def create_network_visualization(G_adapt, height: int = 1500, width: int = 1800,
 
     # Set edge and node styles
     for edge in net.edges:
-        edge['width'] = abs(edge['covariance']) * scale_edge
+        edge['width'] = abs(edge['covariance'])
         edge['length'] = 2000
 
         if show_labels:
             edge['label'] = str(round(edge['covariance'], 2))
         if edge['covariance'] < 0:
             edge['color'] = '#f1ac8b' #red
+            edge['width'] = abs(edge['covariance']) * scale_edge
             if show_labels:
                 edge['font'] = {'multi': 'true', 'size': 15, 'color': 'blue', 'face': 'arial', 'align': 'top'}
         else:
             edge['color'] = "#abe4ff" #blue
+            edge['width'] = abs(edge['covariance']) * scale_edge
             if show_labels:
                 edge['font'] = {'multi': 'true', 'size': 15, 'color': 'red', 'face': 'arial', 'align': 'top'}
 
     for node in net.nodes:
-        if "ASV" in node['label'] or "g_" in node['label']:
+        if "ASV" in node['label'] or len(node['label']) == 1 or "g_" in node['label']:
             node['color'] = '#610053'
         else:
             node['color'] = '#FA4665'
