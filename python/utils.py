@@ -449,8 +449,8 @@ def plot_ordered_heatmap(data: pd.DataFrame, order: list(), n_covariates: int=No
     return p
 
 
-def create_network_visualization(G_adapt, height: int = 1500, width: int = 1800, show_labels: bool = False, size_degree: bool = False,
-                                 scale_edge: int = 2, scale_node: int = 1):
+def create_network_visualization(G_adapt, height: int = 1500, width: int = 1800, show_labels: bool = False, 
+                                 size_degree: bool = False, scale_edge: int = 2, scale_node: int = 1):
     """
     Creates a network visualization using Pyvis library and returns the Pyvis Network object.
 
@@ -492,7 +492,7 @@ def create_network_visualization(G_adapt, height: int = 1500, width: int = 1800,
 
         if show_labels:
             edge['label'] = str(round(edge['covariance'], 2))
-        if edge['covariance'] < 0:
+        if edge['covariance'] >= 0:
             edge['color'] = '#f1ac8b' #red
             edge['width'] = abs(edge['covariance']) * scale_edge
             if show_labels:
