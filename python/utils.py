@@ -977,7 +977,7 @@ def project_covariates(transformed_counts=pd.DataFrame(), raw_counts = pd.DataFr
     return layout
 
 
-def scater_plot(x, y, width=800, height=600, size=3, color='#610053'):
+def scatter_plot(x, y, width=800, height=600, size=3, color='#610053'):
     """
     Create a scatter plot using the given x and y data.
 
@@ -1002,6 +1002,9 @@ def scater_plot(x, y, width=800, height=600, size=3, color='#610053'):
 
     p.xaxis.axis_label = x.name
     p.yaxis.axis_label = y.name
+    
+    p.xaxis.major_label_text_font_size = "24pt"  # Adjust the x-axis tick font size
+    p.yaxis.major_label_text_font_size = "24pt"  # Adjust the y-axis tick font size
     
     p.xgrid.grid_line_color = None  # Remove x-axis grid lines
     p.ygrid.grid_line_color = None  # Remove y-axis grid lines
