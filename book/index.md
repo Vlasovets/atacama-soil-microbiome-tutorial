@@ -31,7 +31,6 @@ we hope you will too and you become involved in the QIIME 2 community.
 * [User Documentation](https://docs.qiime2.org)
 * [Developer Documentation](https://dev.qiime2.org)
 * [Library](https://library.qiime2.org)
-* [@qiime2 on Twitter](https://twitter.com/qiime2) (project announcements)
 * [Workshop announcements](https://workshops.qiime2.org)
 * [BioData Science Lab on Twitter](https://twitter.com/BioDataSc)
 
@@ -42,18 +41,20 @@ These are presented in priority order.
 
 1. [Significant impacts of increasing aridity on the arid soil microbiome](
     https://pubmed.ncbi.nlm.nih.gov/28593197/)
-2. [Sparse inverse covariance estimation with the graphical lasso](
+2. [GGLasso - a Python package for General Graphical Lasso computation](
+    https://joss.theoj.org/papers/10.21105/joss.03865)
+3. [Sparse inverse covariance estimation with the graphical lasso](
     https://academic.oup.com/biostatistics/article/9/3/432/224260)
-3. [Latent variable graphical model selection via convex optimization](
+4. [Latent variable graphical model selection via convex optimization](
     https://www.jstor.org/stable/41806519)
-4. [_Disentangling microbial associations from hidden environmental and technical factors via 
+5. [_Disentangling microbial associations from hidden environmental and technical factors via 
    latent graphical models_](
     https://www.nature.com/articles/s41597-021-00860-8)
-5. [_Microbial networks in SPRING-Semi-parametric rank-based correlation and partial correlation estimation for quantitative microbiome data_](
+6. [_Microbial networks in SPRING-Semi-parametric rank-based correlation and partial correlation estimation for quantitative microbiome data_](
     https://www.frontiersin.org/articles/10.3389/fgene.2019.00516/full)
-6. [Getting started with QIIME 2](
+7. [Getting started with QIIME 2](
    https://gregcaporaso.github.io/q2book/using/getting-started.html)
-7. [_Reproducible, interactive, scalable and extensible microbiome data science
+8. [_Reproducible, interactive, scalable and extensible microbiome data science
     using QIIME 2_](https://doi.org/10.1038/s41587-019-0209-9)
 
 ## Authors
@@ -73,7 +74,8 @@ These are presented in priority order.
 
 ## Thank you to our funders
 
-Our work is supported by Munich School for Data Science (MUDS).
+[Munich School for Data Science](https://www.mu-ds.de/) and 
+[Helmholtz Munich](https://www.helmholtz-munich.de/en).
 
 [Jupyter Book](https://jupyterbook.org) is funded by the Alfred P. Sloan to JGC
 Foundation.
