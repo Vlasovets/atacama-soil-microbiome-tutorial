@@ -37,7 +37,7 @@ where you might want to truncate the forward and reverse reads, and if you'd
 like to trim any bases from the beginnings.
 
 ````{margin}
-```{admonition} Greg's guidance on choosing these values
+```{admonition} Guidance on choosing these values
 
 I typically try to apply some objective criteria when selecting these values.
 For example, in reviewing the quality score plots, I noticed that the
@@ -52,28 +52,46 @@ probably unnecessary here, but is useful here for illustrating how this works.
 ```
 ````
 
-```{usage}
+[//]: # ()
+[//]: # (```{usage})
 
-def demux_factory():
-    import qiime2
+[//]: # ()
+[//]: # (def demux_factory&#40;&#41;:)
 
-    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_filtered)
-    return a
+[//]: # (    import qiime2)
 
-demux = use.init_artifact('demux', demux_factory)
+[//]: # ()
+[//]: # (    a = qiime2.Artifact.load&#40;'demultiplexed_sequences', demultiplexed_sequences_filtered&#41;)
 
-rep_seqs, table, denoising_stats = use.action(
-    use.UsageAction(plugin_id='dada2', action_id='denoise_paired'),
-    use.UsageInputs(demultiplexed_seqs=demux,
-                    trim_left_f=13, 
-                    trim_left_r=13, 
-                    trunc_len_f=150,
-                    trunc_len_r=150,),
-    use.UsageOutputNames(representative_sequences='rep-seqs',
-                        table='table',
-                        denoising_stats='denoising_stats')
-)
-```
+[//]: # (    return a)
+
+[//]: # ()
+[//]: # (demux = use.init_artifact&#40;'demux', demux_factory&#41;)
+
+[//]: # ()
+[//]: # (rep_seqs, table, denoising_stats = use.action&#40;)
+
+[//]: # (    use.UsageAction&#40;plugin_id='dada2', action_id='denoise_paired'&#41;,)
+
+[//]: # (    use.UsageInputs&#40;demultiplexed_seqs=demux,)
+
+[//]: # (                    trim_left_f=13, )
+
+[//]: # (                    trim_left_r=13, )
+
+[//]: # (                    trunc_len_f=150,)
+
+[//]: # (                    trunc_len_r=150,&#41;,)
+
+[//]: # (    use.UsageOutputNames&#40;representative_sequences='rep-seqs',)
+
+[//]: # (                        table='table',)
+
+[//]: # (                        denoising_stats='denoising_stats'&#41;)
+
+[//]: # (&#41;)
+
+[//]: # (```)
 
 ## Reviewing the DADA2 run statistics
 
@@ -81,15 +99,22 @@ At this stage, you will have artifacts containing the feature table,
 corresponding feature sequences, and DADA2 denoising stats. 
 You can generate summaries of these as follows.
 
-```{usage}
-stats_as_md = use.view_as_metadata('stats_dada2_md', denoising_stats)
+[//]: # (```{usage})
 
-use.action(
-    use.UsageAction(plugin_id='metadata', action_id='tabulate'),
-    use.UsageInputs(input=stats_as_md),
-    use.UsageOutputNames(visualization='dada2_stats_summ')
-)
-```
+[//]: # (stats_as_md = use.view_as_metadata&#40;'stats_dada2_md', denoising_stats&#41;)
+
+[//]: # ()
+[//]: # (use.action&#40;)
+
+[//]: # (    use.UsageAction&#40;plugin_id='metadata', action_id='tabulate'&#41;,)
+
+[//]: # (    use.UsageInputs&#40;input=stats_as_md&#41;,)
+
+[//]: # (    use.UsageOutputNames&#40;visualization='dada2_stats_summ'&#41;)
+
+[//]: # (&#41;)
+
+[//]: # (```)
 
 ## Generating and reviewing summaries of the feature table and feature data
 
@@ -101,25 +126,29 @@ times each ASV was observed in each sample. The feature data in this case is
 the sequence that defines each ASV. Generate and explore the summaries of
 each of these files.
 
-```{usage}
-use.action(
-    use.UsageAction(plugin_id='feature_table', action_id='summarize'),
-    use.UsageInputs(table=table, sample_metadata=sample_metadata),
-    use.UsageOutputNames(visualization='table_summ'),
-)
+[//]: # ()
+[//]: # (```{usage})
 
-use.action(
-    use.UsageAction(plugin_id='feature_table', action_id='tabulate_seqs'),
-    use.UsageInputs(data=rep_seqs),
-    use.UsageOutputNames(visualization='rep_seqs_summ'),
-)
+[//]: # (use.action&#40;)
 
-```
+[//]: # (    use.UsageAction&#40;plugin_id='feature_table', action_id='summarize'&#41;,)
 
-```{note}
-We've now reached the end of the **upstream** tutorial. When we begin working
-on the **downstream** tutorial, we'll work with larger feature table and
-feature data artifacts representing many more samples. The samples that we
-worked with in this tutorial are a small subset of what we'll work with in the
-**downstream** tutorial.
-```
+[//]: # (    use.UsageInputs&#40;table=table, sample_metadata=sample_metadata&#41;,)
+
+[//]: # (    use.UsageOutputNames&#40;visualization='table_summ'&#41;,)
+
+[//]: # (&#41;)
+
+[//]: # ()
+[//]: # (use.action&#40;)
+
+[//]: # (    use.UsageAction&#40;plugin_id='feature_table', action_id='tabulate_seqs'&#41;,)
+
+[//]: # (    use.UsageInputs&#40;data=rep_seqs&#41;,)
+
+[//]: # (    use.UsageOutputNames&#40;visualization='rep_seqs_summ'&#41;,)
+
+[//]: # (&#41;)
+
+[//]: # ()
+[//]: # (```)

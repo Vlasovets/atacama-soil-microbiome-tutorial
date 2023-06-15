@@ -23,50 +23,84 @@ which allows for the following commands to be run relatively quickly, however, w
 
 We'll begin with the data import.
 
-```{usage}
-def emp_directory_factory():
-    import os
-    import tempfile
-    from urllib import request
+[//]: # ()
+[//]: # (```{usage})
 
-    from q2_demux._format import EMPPairedEndDirFmt
-    from q2_types.per_sample_sequences import FastqGzFormat
+[//]: # (def emp_directory_factory&#40;&#41;:)
 
-    base_url = 'https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/'
-    forward_sequence_data_url = base_url + "forward.fastq.gz"
-    reverse_sequence_data_url = base_url + "reverse.fastq.gz"
-    barcode_sequence_data_url =  base_url + "barcodes.fastq.gz"    
-    fmt = EMPPairedEndDirFmt(mode='w')
+[//]: # (    import os)
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        bc_fp = os.path.join(tmpdir, 'barcodes.fastq.gz')
-        bc_fn, _ = request.urlretrieve(barcode_sequence_data_url, bc_fp)
+[//]: # (    import tempfile)
 
-        forward_fp = os.path.join(tmpdir, 'forward.fastq.gz')
-        forward_fn, _ = request.urlretrieve(forward_sequence_data_url, forward_fp)
-        
-        reverse_fp = os.path.join(tmpdir, 'reverse.fastq.gz')
-        reverse_fn, _ = request.urlretrieve(reverse_sequence_data_url, reverse_fp)
-        
-        fmt.barcodes.write_data(bc_fn, FastqGzFormat)
-        fmt.forward.write_data(forward_fn, FastqGzFormat)
-        fmt.reverse.write_data(reverse_fn, FastqGzFormat)
+[//]: # (    from urllib import request)
 
-    fmt.validate()
-    return fmt
-    
-data_to_import = use.init_format('data_to_import', emp_directory_factory)
-```
+[//]: # ()
+[//]: # (    from q2_demux._format import EMPPairedEndDirFmt)
 
-```{usage}
-from q2_demux._format import EMPPairedEndDirFmt
+[//]: # (    from q2_types.per_sample_sequences import FastqGzFormat)
 
-emp_paired_end_sequences = use.import_from_format(
-    'emp_paired_end_sequences',
-    semantic_type='EMPPairedEndSequences',
-    variable=data_to_import,
-    view_type=EMPPairedEndDirFmt)
-```
+[//]: # ()
+[//]: # (    base_url = 'https://data.qiime2.org/2022.2/tutorials/atacama-soils/10p/')
+
+[//]: # (    forward_sequence_data_url = base_url + "forward.fastq.gz")
+
+[//]: # (    reverse_sequence_data_url = base_url + "reverse.fastq.gz")
+
+[//]: # (    barcode_sequence_data_url =  base_url + "barcodes.fastq.gz"    )
+
+[//]: # (    fmt = EMPPairedEndDirFmt&#40;mode='w'&#41;)
+
+[//]: # ()
+[//]: # (    with tempfile.TemporaryDirectory&#40;&#41; as tmpdir:)
+
+[//]: # (        bc_fp = os.path.join&#40;tmpdir, 'barcodes.fastq.gz'&#41;)
+
+[//]: # (        bc_fn, _ = request.urlretrieve&#40;barcode_sequence_data_url, bc_fp&#41;)
+
+[//]: # ()
+[//]: # (        forward_fp = os.path.join&#40;tmpdir, 'forward.fastq.gz'&#41;)
+
+[//]: # (        forward_fn, _ = request.urlretrieve&#40;forward_sequence_data_url, forward_fp&#41;)
+
+[//]: # (        )
+[//]: # (        reverse_fp = os.path.join&#40;tmpdir, 'reverse.fastq.gz'&#41;)
+
+[//]: # (        reverse_fn, _ = request.urlretrieve&#40;reverse_sequence_data_url, reverse_fp&#41;)
+
+[//]: # (        )
+[//]: # (        fmt.barcodes.write_data&#40;bc_fn, FastqGzFormat&#41;)
+
+[//]: # (        fmt.forward.write_data&#40;forward_fn, FastqGzFormat&#41;)
+
+[//]: # (        fmt.reverse.write_data&#40;reverse_fn, FastqGzFormat&#41;)
+
+[//]: # ()
+[//]: # (    fmt.validate&#40;&#41;)
+
+[//]: # (    return fmt)
+
+[//]: # (    )
+[//]: # (data_to_import = use.init_format&#40;'data_to_import', emp_directory_factory&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (```{usage})
+
+[//]: # (from q2_demux._format import EMPPairedEndDirFmt)
+
+[//]: # ()
+[//]: # (emp_paired_end_sequences = use.import_from_format&#40;)
+
+[//]: # (    'emp_paired_end_sequences',)
+
+[//]: # (    semantic_type='EMPPairedEndSequences',)
+
+[//]: # (    variable=data_to_import,)
+
+[//]: # (    view_type=EMPPairedEndDirFmt&#41;)
+
+[//]: # (```)
 
 ## Generating and viewing a summary of the imported data
 
@@ -84,97 +118,153 @@ quality. This will give you an overview of the quality of your sequencing run,
 and you'll need to extract information from these plots to perform quality
 control on the data in the next step of the tutorial.
 
-```{usage}
+[//]: # (```{usage})
 
-barcode_sequence = use.get_metadata_column('barcode_sequence', 'barcode-sequence', sample_metadata)
+[//]: # ()
+[//]: # (barcode_sequence = use.get_metadata_column&#40;'barcode_sequence', 'barcode-sequence', sample_metadata&#41;)
 
-use.action(
-    use.UsageAction(plugin_id='demux', action_id='emp_paired'),
-    use.UsageInputs(seqs=emp_paired_end_sequences, 
-                    barcodes=barcode_sequence,
-                    rev_comp_mapping_barcodes=True),
-    use.UsageOutputNames(per_sample_sequences='demultiplexed_sequences_full.qza',
-                         error_correction_details='demux_details'),
-)
-```
+[//]: # ()
+[//]: # (use.action&#40;)
+
+[//]: # (    use.UsageAction&#40;plugin_id='demux', action_id='emp_paired'&#41;,)
+
+[//]: # (    use.UsageInputs&#40;seqs=emp_paired_end_sequences, )
+
+[//]: # (                    barcodes=barcode_sequence,)
+
+[//]: # (                    rev_comp_mapping_barcodes=True&#41;,)
+
+[//]: # (    use.UsageOutputNames&#40;per_sample_sequences='demultiplexed_sequences_full.qza',)
+
+[//]: # (                         error_correction_details='demux_details'&#41;,)
+
+[//]: # (&#41;)
+
+[//]: # (```)
 
 Let’s subsample the data. We will perform this subsampling in this tutorial for two reasons - 
 one, to speed up the tutorial run time, and two, to demonstrate the functionality.
 
+[//]: # ()
+[//]: # (```{usage})
 
-```{usage}
+[//]: # ()
+[//]: # (def full_factory&#40;&#41;:)
 
-def full_factory():
-    import qiime2
+[//]: # (    import qiime2)
 
-    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_full)
-    return a
+[//]: # ()
+[//]: # (    a = qiime2.Artifact.load&#40;'demultiplexed_sequences', demultiplexed_sequences_full&#41;)
 
-demultiplexed_sequences_full = use.init_artifact('demultiplexed_sequences', full_factory)
+[//]: # (    return a)
 
-use.action(
-    use.UsageAction(plugin_id='demux', action_id='subsample_paired'),
-    use.UsageInputs(sequences=demultiplexed_sequences_full, 
-                    fraction=0.3),
-    use.UsageOutputNames(subsampled_sequences='demultiplexed_sequences_subsample'),
-)
-```
+[//]: # ()
+[//]: # (demultiplexed_sequences_full = use.init_artifact&#40;'demultiplexed_sequences', full_factory&#41;)
 
+[//]: # ()
+[//]: # (use.action&#40;)
 
-```{usage}
+[//]: # (    use.UsageAction&#40;plugin_id='demux', action_id='subsample_paired'&#41;,)
 
-def subsample_factory():
-    import qiime2
+[//]: # (    use.UsageInputs&#40;sequences=demultiplexed_sequences_full, )
 
-    a = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_subsample)
-    return a
+[//]: # (                    fraction=0.3&#41;,)
 
-demultiplexed_sequences_subsample_copy = use.init_artifact('demultiplexed_sequences_subsample_copy', subsample_factory)
+[//]: # (    use.UsageOutputNames&#40;subsampled_sequences='demultiplexed_sequences_subsample'&#41;,)
 
-use.action(
-    use.UsageAction(plugin_id='demux', action_id='summarize'),
-    use.UsageInputs(data=demultiplexed_sequences_subsample_copy),
-    use.UsageOutputNames(visualization='demultiplexed_sequences_subsample_view'),
-)
+[//]: # (&#41;)
 
-```
+[//]: # (```)
+
+[//]: # ()
+[//]: # ()
+[//]: # (```{usage})
+
+[//]: # ()
+[//]: # (def subsample_factory&#40;&#41;:)
+
+[//]: # (    import qiime2)
+
+[//]: # ()
+[//]: # (    a = qiime2.Artifact.load&#40;'demultiplexed_sequences', demultiplexed_sequences_subsample&#41;)
+
+[//]: # (    return a)
+
+[//]: # ()
+[//]: # (demultiplexed_sequences_subsample_copy = use.init_artifact&#40;'demultiplexed_sequences_subsample_copy', subsample_factory&#41;)
+
+[//]: # ()
+[//]: # (use.action&#40;)
+
+[//]: # (    use.UsageAction&#40;plugin_id='demux', action_id='summarize'&#41;,)
+
+[//]: # (    use.UsageInputs&#40;data=demultiplexed_sequences_subsample_copy&#41;,)
+
+[//]: # (    use.UsageOutputNames&#40;visualization='demultiplexed_sequences_subsample_view'&#41;,)
+
+[//]: # (&#41;)
+
+[//]: # ()
+[//]: # (```)
 
 Let’s take a look at the summary in demux-subsample.qzv. 
 In the “Per-sample sequence counts” table on the “Overview” tab, there are 75 samples in the data. 
 If we look at the last 20 or so rows in the table, though, we will observe 
 that many samples have fewer than 100 reads in them - let’s filter those samples out of the data:
 
-```{usage}
-  
-def export_factory():
-    import qiime2
+[//]: # ()
+[//]: # (```{usage})
 
-    a = qiime2.Visualization.load('demultiplexed_sequences_subsample_view')
-    
-    dirfmt = a.view(a.format)
-    vzDir = str(dirfmt)
-    metadata_dir = vzDir + 'per-sample-fastq-counts.tsv'
-    
-    
-    return qiime2.Visualization.export_data(a, metadata_dir)
+[//]: # (  )
+[//]: # (def export_factory&#40;&#41;:)
 
+[//]: # (    import qiime2)
 
-def filter_factory():
-    import qiime2
+[//]: # ()
+[//]: # (    a = qiime2.Visualization.load&#40;'demultiplexed_sequences_subsample_view'&#41;)
 
-    b = qiime2.Artifact.load('demultiplexed_sequences', demultiplexed_sequences_subsample)
-    
-    return b
+[//]: # (    )
+[//]: # (    dirfmt = a.view&#40;a.format&#41;)
 
-metadata = use.init_metadata('Type[Metadata]', export_factory)
+[//]: # (    vzDir = str&#40;dirfmt&#41;)
 
-demultiplexed_sequences_top100 = use.init_artifact('demultiplexed_sequences_top100', filter_factory)
+[//]: # (    metadata_dir = vzDir + 'per-sample-fastq-counts.tsv')
 
-use.action(
-    use.UsageAction(plugin_id='demux', action_id='filter_samples'),
-    use.UsageInputs(demux=demultiplexed_sequences_top100,
-                    metadata=metadata,
-                    where = 'CAST([forward sequence count] AS INT) > 100'),
-    use.UsageOutputNames(filtered_demux='demultiplexed_sequences_filtered'),
-)
-```
+[//]: # (    )
+[//]: # (    )
+[//]: # (    return qiime2.Visualization.export_data&#40;a, metadata_dir&#41;)
+
+[//]: # ()
+[//]: # ()
+[//]: # (def filter_factory&#40;&#41;:)
+
+[//]: # (    import qiime2)
+
+[//]: # ()
+[//]: # (    b = qiime2.Artifact.load&#40;'demultiplexed_sequences', demultiplexed_sequences_subsample&#41;)
+
+[//]: # (    )
+[//]: # (    return b)
+
+[//]: # ()
+[//]: # (metadata = use.init_metadata&#40;'Type[Metadata]', export_factory&#41;)
+
+[//]: # ()
+[//]: # (demultiplexed_sequences_top100 = use.init_artifact&#40;'demultiplexed_sequences_top100', filter_factory&#41;)
+
+[//]: # ()
+[//]: # (use.action&#40;)
+
+[//]: # (    use.UsageAction&#40;plugin_id='demux', action_id='filter_samples'&#41;,)
+
+[//]: # (    use.UsageInputs&#40;demux=demultiplexed_sequences_top100,)
+
+[//]: # (                    metadata=metadata,)
+
+[//]: # (                    where = 'CAST&#40;[forward sequence count] AS INT&#41; > 100'&#41;,)
+
+[//]: # (    use.UsageOutputNames&#40;filtered_demux='demultiplexed_sequences_filtered'&#41;,)
+
+[//]: # (&#41;)
+
+[//]: # (```)
