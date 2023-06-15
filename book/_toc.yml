@@ -13,16 +13,14 @@ parts:
     - file: 020-tutorial-upstream/020-metadata.md
     - file: 020-tutorial-upstream/030-importing.md
     - file: 020-tutorial-upstream/040-denoising.md
+    - file: 020-tutorial-upstream/050-transforming.md
+    - file: 020-tutorial-upstream/060-covariance.md
   - caption: Downstream tutorial
     chapters:
-    - file: 030-tutorial-downstream/010-filtering.md
-    - file: 030-tutorial-downstream/020-taxonomy.md
-    - file: 030-tutorial-downstream/030-phylogeny.md
-    - file: 030-tutorial-downstream/040-even-sampling.md
-    - file: 030-tutorial-downstream/050-core-metrics.md
-    - file: 030-tutorial-downstream/060-alpha-diversity.md
-    - file: 030-tutorial-downstream/070-beta-diversity.md
-    - file: 030-tutorial-downstream/080-longitudinal.md
+    - file: 030-tutorial-downstream/010-sparse.md
+    - file: 030-tutorial-downstream/020-adaptive.md
+    - file: 030-tutorial-downstream/030-low.md
+    - file: 030-tutorial-downstream/040-pca.md
   - caption: Appendices
     chapters:
     - file: 040-appendices/convert-and-import-artifacts.ipynb
