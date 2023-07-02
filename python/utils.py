@@ -99,6 +99,34 @@ def filter_zero_samples(data, threshold=0.95):
     return filtered_data
 
 
+def rename_index_with_sum(df: pd.DataFrame):
+    """
+    Rename the index of a DataFrame based on the relative abundance.
+    New index values are generated with the format "ASV" followed by the top abundance among all the features.
+
+    Parameters:
+    - df: pandas DataFrame. The DataFrame to be modified.
+
+    Returns:
+    - df: pandas DataFrame. The modified DataFrame with the renamed index.
+    """
+
+    # Calculate the sum of each row and rename the index
+    row_sum = df.sum(axis=1)
+    df.rename(index=row_sum, inplace=True)
+
+    # Sort the index
+    df.sort_index(inplace=True)
+
+    # Reset the index
+    df.reset_index(drop=True, inplace=True)
+
+    # Rename the index using the new index values
+    df.rename(index=lambda x: f"ASV-{x + 1}", inplace=True)
+
+    return df
+
+
 def update_index(filtered_data, processed_taxa):
     # Create a dictionary mapping genus to species
     genus = processed_taxa['genus'].to_dict()
